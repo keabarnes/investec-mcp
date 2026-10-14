@@ -8,9 +8,11 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 import asyncio
 import os
+import sys
 
 from utils import get_investec_api_client
 from tools import register_all_tools
+from access import access_level_from_env
 
 load_dotenv()
 
@@ -55,8 +57,10 @@ async def main():
     
     Registers all tools and starts the server with the configured transport.
     """
-    # Register all tools with the server
-    await register_all_tools(mcp)
+    # Register the tools allowed at the configured access level
+    access_level = access_level_from_env()
+    await register_all_tools(mcp, access_level)
+    print(f"investec-mcp: access level {access_level.name.lower()}", file=sys.stderr)
     
     # Run the server with the configured transport
     transport = os.getenv("TRANSPORT", "sse")

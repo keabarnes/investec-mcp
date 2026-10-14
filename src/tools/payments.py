@@ -5,11 +5,16 @@ from mcp.server.fastmcp import Context
 import json
 from typing import List, Dict, Any, Optional
 
+from access import AccessLevel
 
-async def register_payment_tools(mcp):
-    """Register all transfer and payment related tools with the MCP server."""
+
+async def register_payment_tools(mcp, access_level: AccessLevel = AccessLevel.PAYMENTS):
+    """Register the transfer and payment tools allowed at the given access level."""
+
+    def tool_at(level):
+        return mcp.tool() if access_level >= level else (lambda fn: fn)
     
-    @mcp.tool()
+    @tool_at(AccessLevel.TRANSFERS)
     async def transfer_multiple(
         ctx: Context, 
         from_account_id: str, 
@@ -35,7 +40,7 @@ async def register_payment_tools(mcp):
         except Exception as e:
             return f"Error performing transfers: {str(e)}"
 
-    @mcp.tool()
+    @tool_at(AccessLevel.PAYMENTS)
     async def pay_multiple(ctx: Context, account_id: str, payment_list: List[Dict[str, Any]]) -> str:
         """Pay funds to one or multiple beneficiaries.
 
@@ -54,7 +59,7 @@ async def register_payment_tools(mcp):
         except Exception as e:
             return f"Error making payments: {str(e)}"
 
-    @mcp.tool()
+    @tool_at(AccessLevel.TRANSFERS)
     async def transfer_money(ctx: Context, from_account_id: str, to_account_id: str, amount: float, reference: str) -> str:
         """Transfer money between accounts.
 
@@ -76,7 +81,7 @@ async def register_payment_tools(mcp):
         except Exception as e:
             return f"Error transferring money: {str(e)}"
 
-    @mcp.tool()
+    @tool_at(AccessLevel.PAYMENTS)
     async def pay_beneficiary(ctx: Context, account_id: str, beneficiary_id: str, amount: float, reference: str) -> str:
         """Pay a saved beneficiary.
 
