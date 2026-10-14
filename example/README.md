@@ -5,7 +5,7 @@ This directory contains an example Python script (`openai_agent.py`) demonstrati
 ## Functionality
 
 The agent is designed to:
-1.  Connect to a running Investec MCP server (expected at `http://0.0.0.0:8050/sse` by default).
+1.  Connect to a running Investec MCP server (expected at `http://localhost:8050/sse` by default).
 2.  Take a user's question about Investec via terminal input.
 3.  Use the connected MCP server's tools and resources to find an answer.
 4.  Print the answer back to the terminal.
