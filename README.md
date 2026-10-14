@@ -85,8 +85,9 @@ The following environment variables can be configured in your `.env` file:
 | Variable | Description | Example |
 |----------|-------------|----------|
 | `TRANSPORT` | Transport protocol (sse, streamable-http or stdio) | `sse` |
-| `HOST` | Host to bind to when using SSE transport | `0.0.0.0` |
-| `PORT` | Port to listen on when using SSE transport | `8050` |
+| `HOST` | Host to bind to for the HTTP transports (default `127.0.0.1`; the Docker image sets `0.0.0.0`) | `127.0.0.1` |
+| `PORT` | Port to listen on for the HTTP transports | `8050` |
+| `ALLOWED_HOSTS` | Host names to accept behind a reverse proxy such as `tailscale serve`, comma-separated | `pi.example.ts.net` |
 | `INVESTEC_CLIENT_ID` | Client ID from Investec Developer Portal | `your-client-id` |
 | `INVESTEC_CLIENT_SECRET` | Client Secret from Investec Developer Portal | `your-client-secret` |
 | `INVESTEC_API_KEY` | API Key from Investec Developer Portal | `your-api-key` |
@@ -122,8 +123,10 @@ With stdio, the MCP client itself can spin up the MCP server.
 #### SSE Transport
 
 ```bash
-docker run --env-file .env -p 8050:8050 investec/mcp
+docker run --env-file .env -p 127.0.0.1:8050:8050 investec/mcp
 ```
+
+Publishing on `127.0.0.1` keeps the server reachable from this machine only.
 
 The MCP server will run as an API endpoint within the container that you can connect to.
 

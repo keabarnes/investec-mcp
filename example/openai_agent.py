@@ -16,7 +16,7 @@ load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "your_openai_api_key")
 
 investec_mcp_server = MCPServerHTTP(
-    url="http://0.0.0.0:8050/sse",
+    url="http://localhost:8050/sse",
 )
 
 
