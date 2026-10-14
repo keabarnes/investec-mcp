@@ -63,6 +63,9 @@ async def main():
     if transport == 'sse':
         # Run the MCP server with sse transport
         await mcp.run_sse_async(host=host, port=port)
+    elif transport == 'streamable-http':
+        # Run the MCP server with Streamable HTTP transport, served at /mcp
+        await mcp.run_streamable_http_async(host=host, port=port)
     else:
         # Run the MCP server with stdio transport
         await mcp.run_stdio_async()

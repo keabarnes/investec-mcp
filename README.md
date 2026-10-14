@@ -84,7 +84,7 @@ The following environment variables can be configured in your `.env` file:
 
 | Variable | Description | Example |
 |----------|-------------|----------|
-| `TRANSPORT` | Transport protocol (sse or stdio) | `sse` |
+| `TRANSPORT` | Transport protocol (sse, streamable-http or stdio) | `sse` |
 | `HOST` | Host to bind to when using SSE transport | `0.0.0.0` |
 | `PORT` | Port to listen on when using SSE transport | `8050` |
 | `INVESTEC_CLIENT_ID` | Client ID from Investec Developer Portal | `your-client-id` |
@@ -103,6 +103,15 @@ uv run python src/main.py
 ```
 
 The MCP server will run as an API endpoint that you can connect to.
+
+#### Streamable HTTP Transport
+
+```bash
+# Set TRANSPORT=streamable-http in .env then:
+uv run python src/main.py
+```
+
+The MCP endpoint will be at `http://localhost:8050/mcp`.
 
 #### Stdio Transport
 
@@ -123,6 +132,19 @@ The MCP server will run as an API endpoint within the container that you can con
 With stdio, the MCP client itself can spin up the MCP server container.
 
 ## Integration with MCP Clients
+
+### Streamable HTTP Configuration
+
+```json
+{
+  "mcpServers": {
+    "investec": {
+      "type": "http",
+      "url": "http://localhost:8050/mcp"
+    }
+  }
+}
+```
 
 ### SSE Configuration
 
