@@ -1,7 +1,7 @@
 """
 MCP server for integrating Investec Banking API into AI agents.
 """
-from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.mcpserver import MCPServer, Context
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -21,7 +21,7 @@ class InvestecContext:
     investec_client: object  # Will be replaced with actual client type
 
 @asynccontextmanager
-async def investec_lifespan(server: FastMCP) -> AsyncIterator[InvestecContext]:
+async def investec_lifespan(server: MCPServer) -> AsyncIterator[InvestecContext]:
     """
     Manages the Investec API client lifecycle.
     
@@ -40,13 +40,11 @@ async def investec_lifespan(server: FastMCP) -> AsyncIterator[InvestecContext]:
         # No explicit cleanup needed for the client
         pass
 
-# Initialize FastMCP server with the Investec client as context
-mcp = FastMCP(
+# Initialize the MCP server with the Investec client as context
+mcp = MCPServer(
     "investec-mcp",
     description="MCP server for Investec Banking API integration",
     lifespan=investec_lifespan,
-    host=os.getenv("HOST", "0.0.0.0"),
-    port=os.getenv("PORT", "8050")
 )
 
 async def main():
@@ -60,9 +58,11 @@ async def main():
     
     # Run the server with the configured transport
     transport = os.getenv("TRANSPORT", "sse")
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8050"))
     if transport == 'sse':
         # Run the MCP server with sse transport
-        await mcp.run_sse_async()
+        await mcp.run_sse_async(host=host, port=port)
     else:
         # Run the MCP server with stdio transport
         await mcp.run_stdio_async()
