@@ -90,6 +90,19 @@ The following environment variables can be configured in your `.env` file:
 | `INVESTEC_CLIENT_ID` | Client ID from Investec Developer Portal | `your-client-id` |
 | `INVESTEC_CLIENT_SECRET` | Client Secret from Investec Developer Portal | `your-client-secret` |
 | `INVESTEC_API_KEY` | API Key from Investec Developer Portal | `your-api-key` |
+| `INVESTEC_ACCESS_LEVEL` | `read`, `transfers` or `payments` (default) | `read` |
+
+### Access levels
+
+`INVESTEC_ACCESS_LEVEL` limits what the server can do. Levels are cumulative:
+
+| Level | Adds |
+|-------|------|
+| `read` | Account, profile, beneficiary and document tools |
+| `transfers` | `transfer_money`, `transfer_multiple` |
+| `payments` (default) | `pay_beneficiary`, `pay_multiple` |
+
+For read-only use, also give the API key only read permissions in Investec Online.
 
 ## Running the Server
 
@@ -186,6 +199,7 @@ Add this server to your MCP configuration for Claude Desktop, Windsurf, or any o
                "-e", "INVESTEC_CLIENT_ID", 
                "-e", "INVESTEC_CLIENT_SECRET", 
                "-e", "INVESTEC_API_KEY", 
+               "-e", "INVESTEC_ACCESS_LEVEL",
                "investec/mcp"],
       "env": {
         "TRANSPORT": "stdio",
@@ -213,4 +227,4 @@ To add more functionality:
 
 1. Add new methods to the `InvestecClient` class in `src/utils.py` to interact with the desired Investec API endpoints.
 2. Create new tool functions within the relevant Python file inside the `src/tools/` directory (e.g., `src/tools/accounts.py` for account-related tools). Use the `@mcp.tool()` decorator for these functions.
-3. Import and register the new tool functions in `src/main.py`.
+3. Import and register the new tool functions in `src/tools/__init__.py`; tools that move money go behind the matching access level.

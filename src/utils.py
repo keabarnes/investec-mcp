@@ -4,6 +4,8 @@ from typing import Dict, List, Optional, Any, Union
 import time
 import base64
 
+from access import AccessLevel, SCOPES, access_level_from_env
+
 class InvestecClient:
     """Client for interacting with the Investec Open API."""
     
@@ -11,7 +13,7 @@ class InvestecClient:
     TOKEN_URL = f"{API_BASE_URL}/identity/v2/oauth2/token"
     API_URL = f"{API_BASE_URL}/za/pb/v1"
     
-    def __init__(self, client_id: str, client_secret: str, api_key: str):
+    def __init__(self, client_id: str, client_secret: str, api_key: str, access_level: AccessLevel = AccessLevel.PAYMENTS):
         """
         Initialize the Investec API client.
         
@@ -19,13 +21,15 @@ class InvestecClient:
             client_id: The client ID from the Investec Developer portal
             client_secret: The client secret from the Investec Developer portal
             api_key: The API key from the Investec Developer portal
+            access_level: What the client may do (default: payments)
         """
         self.client_id = client_id
         self.client_secret = client_secret
         self.api_key = api_key
         self.access_token = None
         self.token_expires_at = 0
-        self.scope = "accounts balances transactions transfers beneficiarypayments documents.statements documents.taxcertificates"
+        self.access_level = access_level
+        self.scope = SCOPES[access_level]
 
     async def _get_token(self) -> None:
         """Get or refresh the OAuth token."""
@@ -53,6 +57,11 @@ class InvestecClient:
 
     async def _make_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
         """Make an authenticated request to the Investec API."""
+        if method.upper() != "GET":
+            # Transfers between your own accounts need the transfers level; any other write needs payments
+            needed = AccessLevel.TRANSFERS if endpoint.endswith("/transfermultiple") else AccessLevel.PAYMENTS
+            if self.access_level < needed:
+                raise PermissionError(f"{endpoint} needs INVESTEC_ACCESS_LEVEL={needed.name.lower()}")
         await self._get_token()
         
         url = f"{self.API_URL}{endpoint}"
@@ -391,4 +400,4 @@ def get_investec_api_client() -> InvestecClient:
             "INVESTEC_CLIENT_ID, INVESTEC_CLIENT_SECRET, or INVESTEC_API_KEY"
         )
     
-    return InvestecClient(client_id, client_secret, api_key)
+    return InvestecClient(client_id, client_secret, api_key, access_level_from_env())
